@@ -7,11 +7,10 @@ function WaitTimeList() {
   const navigate = useNavigate();
   const [rides, setRides] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [entityFilter, setEntityFilter] = useState(null);
+  const [entityFilter, setEntityFilter] = useState('ATTRACTION');
 
   useEffect(() => {
     // Fetch live ride data from your API Gateway endpoint.
-    // Example endpoint you provided: https://ag4akx3m4a.execute-api.us-east-2.amazonaws.com/rides/magic-kingdom
     const controller = new AbortController();
     const fetchUrl = `https://ag4akx3m4a.execute-api.us-east-2.amazonaws.com/rides/${parkId}`;
     setLoading(true);
@@ -76,6 +75,15 @@ function WaitTimeList() {
           aria-pressed={entityFilter === 'SHOW'}
         >
           Shows
+        </button>
+        <button
+          onClick={() => setEntityFilter((p) => (p === 'RESTAURANT' ? null : 'RESTAURANT'))}
+          className={`flex-1 h-10 border border-gray-200 border-l-0 flex items-center justify-center text-sm font-medium ${
+            entityFilter === 'RESTAURANT' ? 'bg-blue-50' : 'bg-white'
+          } rounded-none`}
+          aria-pressed={entityFilter === 'RESTAURANT'}
+        >
+          Restaurants
         </button>
       </div>
 

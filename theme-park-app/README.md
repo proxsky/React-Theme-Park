@@ -1,6 +1,6 @@
-# React + Vite
+# Theme Park Status App
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This project (Theme Park Status App) provides a minimal React + Vite setup to track theme park wait times.
 
 Currently, two official plugins are available:
 

@@ -8,11 +8,11 @@ function App() {
       <div className="min-h-screen max-w-md mx-auto bg-white shadow-xl overflow-hidden">
         {/* Top Navigation Bar */}
         <header className="bg-blue-600 text-white p-4 text-center sticky top-0 z-10">
-          <h1 className="text-xl font-bold">USA Theme Park Tracker</h1>
+          <h1 className="text-xl font-bold">Theme Park Status</h1>
         </header>
 
         {/* Page Routing */}
-        <main className="p-4 border-t-2">
+        <main className="p-4">
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/park/:parkId" element={<WaitTimeList />} />

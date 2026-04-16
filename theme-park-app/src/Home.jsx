@@ -73,8 +73,8 @@ function Home() {
       <div className="flex w-full gap-0 my-2">
         <button
           onClick={() => setSelectedRegion("Florida")}
-          className={`flex-1 h-12 border border-gray-200 flex items-center justify-center text-sm font-medium ${
-            selectedRegion === "Florida" ? "bg-blue-200" : "bg-white"
+          className={`flex-1 h-10 border border-gray-200 flex items-center justify-center text-sm font-medium ${
+            selectedRegion === "Florida" ? "bg-blue-50" : "bg-white"
           } rounded-none`}
           aria-pressed={selectedRegion === "Florida"}
         >
@@ -82,8 +82,8 @@ function Home() {
         </button>
         <button
           onClick={() => setSelectedRegion("California")}
-          className={`flex-1 h-12 border border-gray-200 border-l-0 flex items-center justify-center text-sm font-medium ${
-            selectedRegion === "California" ? "bg-red-200" : "bg-white"
+          className={`flex-1 h-10 border border-gray-200 border-l-0 flex items-center justify-center text-sm font-medium ${
+            selectedRegion === "California" ? "bg-blue-50" : "bg-white"
           } rounded-none`}
           aria-pressed={selectedRegion === "California"}
         >
