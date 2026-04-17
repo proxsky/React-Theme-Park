@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { MapPin } from "lucide-react";
 
 const PARKS = [
@@ -63,6 +63,61 @@ const PARKS = [
 function Home() {
   const navigate = useNavigate();
   const [selectedRegion, setSelectedRegion] = useState("Florida");
+  const [parkHours, setParkHours] = useState({});
+
+  useEffect(() => {
+    fetch("https://m82b80pnt7.execute-api.us-east-2.amazonaws.com/parks")
+      .then((res) => res.json())
+      .then((data) => {
+        const map = {};
+        if (data && Array.isArray(data.parks)) {
+          data.parks.forEach((p) => {
+            if (p.showTimes && p.showTimes.length) {
+              const times = p.showTimes
+                .map((t) => new Date(t))
+                .filter((d) => !isNaN(d));
+
+              if (times.length >= 4) {
+                const earlyStart = times[0];
+                const earlyEnd = times[1];
+                const regularStart = times[2];
+                const regularEnd = times[3];
+                map[p.parkId] = {
+                  early: { start: earlyStart.toISOString(), end: earlyEnd.toISOString() },
+                  regular: { start: regularStart.toISOString(), end: regularEnd.toISOString() },
+                };
+              } else if (times.length === 2) {
+                map[p.parkId] = {
+                  early: null,
+                  regular: { start: times[0].toISOString(), end: times[1].toISOString() },
+                };
+              } else if (times.length > 0) {
+                const start = new Date(Math.min(...times.map((d) => d.getTime())));
+                const end = new Date(Math.max(...times.map((d) => d.getTime())));
+                map[p.parkId] = {
+                  early: null,
+                  regular: { start: start.toISOString(), end: end.toISOString() },
+                };
+              }
+            }
+          });
+        }
+        setParkHours(map);
+      })
+      .catch(() => {
+        setParkHours({});
+      });
+  }, []);
+
+  const formatTime = (iso) => {
+    try {
+      const d = new Date(iso);
+      if (isNaN(d)) return "";
+      return d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+    } catch (e) {
+      return "";
+    }
+  };
 
   return (
     <div className="flex flex-col gap-4">
@@ -93,16 +148,38 @@ function Home() {
 
       <div className="grid grid-cols-1 gap-3">
         {PARKS.filter((park) => !selectedRegion || park.region === selectedRegion).map((park) => (
-          <button
-            key={park.id}
-            onClick={() => navigate(`/park/${park.id}`)}
-            className={`flex items-center justify-between p-4 rounded-xl shadow-sm border border-gray-100 active:scale-95 transition-transform ${park.color}`}
-          >
-            <div className="flex flex-col items-start">
-              <span className="font-bold text-gray-900">{park.name}</span>
-              <span className="text-xs text-gray-600 flex items-center gap-1 mt-1">
+            <button
+              key={park.id}
+              onClick={() => navigate(`/park/${park.id}`)}
+              className={`flex items-center justify-between gap-4 p-4 rounded-xl shadow-sm border border-gray-100 active:scale-95 transition-transform ${park.color}`}
+            >
+            <div className="flex-1 min-w-0">
+              <span className="font-bold text-gray-900 block leading-tight whitespace-normal break-words">{park.name}</span>
+              <span className="text-xs text-gray-600 mt-1 flex items-center gap-1 justify-center w-full">
                 <MapPin size={12} /> {park.region}
               </span>
+            </div>
+            <div className="flex flex-col items-end justify-center text-xs text-gray-600 mr-3 whitespace-nowrap">
+              {parkHours[park.id] ? (
+                <>
+                  {parkHours[park.id].early ? (
+                    <span className="leading-tight">
+                      <span className="font-medium">Early</span>: {`${formatTime(
+                        parkHours[park.id].early.start
+                      )} - ${formatTime(parkHours[park.id].early.end)}`}
+                    </span>
+                  ) : null}
+                  {parkHours[park.id].regular ? (
+                    <span className="leading-tight">
+                      <span className="font-medium">Regular</span>: {`${formatTime(
+                        parkHours[park.id].regular.start
+                      )} - ${formatTime(parkHours[park.id].regular.end)}`}
+                    </span>
+                  ) : null}
+                </>
+              ) : (
+                <span>Hours unavailable</span>
+              )}
             </div>
             <span className="text-gray-400">➔</span>
           </button>
