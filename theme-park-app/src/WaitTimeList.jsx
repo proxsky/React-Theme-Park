@@ -128,7 +128,7 @@ function WaitTimeList() {
                     </span>
                   </div>
                 ) : isOpen ? (
-                  <div className={`flex items-center gap-1 px-3 py-1 rounded-full border text-sm font-bold ${getWaitTimeColor(wait)}`}>
+                  <div className={`whitespace-nowrap flex items-center gap-1 px-3 py-1 rounded-full border text-sm font-bold ${getWaitTimeColor(wait)}`}>
                     <Clock size={14} />
                     {wait} min
                   </div>
