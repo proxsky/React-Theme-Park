@@ -2,62 +2,114 @@ import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { MapPin } from "lucide-react";
 
+// --- Weather Helper Functions & Component ---
+const getWeatherIcon = (code) => {
+  if (code === 0) return '☀️'; 
+  if (code >= 1 && code <= 3) return '⛅'; 
+  if (code >= 45 && code <= 48) return '🌫️'; 
+  if (code >= 51 && code <= 67) return '🌧️'; 
+  if (code >= 71 && code <= 77) return '❄️'; 
+  if (code >= 80 && code <= 82) return '🌦️'; 
+  if (code >= 85 && code <= 86) return '❄️'; 
+  if (code >= 95) return '⛈️'; 
+  return '🌡️'; 
+};
+
+function WeatherBanner({ region }) {
+  const [weatherData, setWeatherData] = useState({ forecasts: [], loading: true });
+
+  useEffect(() => {
+    const fetchWeather = async () => {
+      setWeatherData({ forecasts: [], loading: true });
+      
+      // Set coordinates based on the selected region
+      const coords = region === 'Florida' 
+        ? { lat: 28.5383, lon: -81.3792 } // Orlando
+        : { lat: 34.0522, lon: -118.2437 }; // Los Angeles
+        
+      // Fetching hourly data with UNIX timestamps for easy time comparison, fetching 2 days to prevent midnight cutoff issues
+      const url = `https://api.open-meteo.com/v1/forecast?latitude=${coords.lat}&longitude=${coords.lon}&hourly=temperature_2m,weather_code&temperature_unit=fahrenheit&timeformat=unixtime&forecast_days=2`;
+
+      try {
+        const response = await fetch(url);
+        const data = await response.json();
+        
+        const currentUnixTime = Math.floor(Date.now() / 1000);
+        
+        // Find the index in the hourly array that is closest to our current time
+        // We subtract 3600 (1 hour in seconds) to ensure we grab the current active hour block
+        let startIndex = data.hourly.time.findIndex(t => t >= currentUnixTime - 3600);
+        if (startIndex === -1) startIndex = 0; // Fallback just in case
+        
+        const forecasts = [];
+        
+        // Loop 4 times starting from the current hour's index
+        for (let i = 0; i < 5; i++) {
+          const index = startIndex + i;
+          
+          if (index < data.hourly.time.length) {
+            // Convert the UNIX timestamp back to a Javascript Date object
+            const date = new Date(data.hourly.time[index] * 1000);
+            
+            // First item is labeled "Now", subsequent items show their respective hour (e.g., "2 PM")
+            const timeLabel = i === 0 ? "Now" : date.toLocaleTimeString([], { hour: 'numeric' });
+            
+            forecasts.push({
+              timeLabel,
+              temp: Math.round(data.hourly.temperature_2m[index]),
+              icon: getWeatherIcon(data.hourly.weather_code[index])
+            });
+          }
+        }
+        
+        setWeatherData({ forecasts, loading: false });
+      } catch (error) {
+        console.error("Failed to fetch weather:", error);
+        setWeatherData({ forecasts: [], loading: false });
+      }
+    };
+
+    fetchWeather();
+  }, [region]);
+
+  return (
+    <div className="flex flex-col items-center justify-center p-3 bg-blue-50 text-slate-800 border-b border-blue-100 shadow-sm rounded-lg mb-2">
+      {weatherData.loading ? (
+        <span className="text-sm font-medium animate-pulse text-slate-500">Fetching local weather...</span>
+      ) : weatherData.forecasts.length > 0 ? (
+        <div className="w-full flex flex-col gap-2">
+          <span className="text-xs font-semibold text-slate-500 text-center uppercase tracking-wider">
+            {region === 'Florida' ? 'Orlando Forecast' : 'Los Angeles Forecast'}
+          </span>
+          <div className="flex w-full items-center justify-evenly">
+            {weatherData.forecasts.map((forecast, idx) => (
+              <div key={idx} className="flex flex-col items-center">
+                <span className="text-xs font-medium text-slate-600">{forecast.timeLabel}</span>
+                <span className="text-3xl my-1" role="img" aria-label="weather icon">{forecast.icon}</span>
+                <span className="text-sm font-bold text-slate-800">{forecast.temp}°</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : (
+        <span className="text-sm font-medium text-slate-500">Weather unavailable</span>
+      )}
+    </div>
+  );
+}
+// --- End Weather Section ---
+
 const PARKS = [
-  {
-    id: "magic-kingdom",
-    name: "Magic Kingdom",
-    region: "Florida",
-    color: "bg-blue-100",
-  },
-  {
-    id: "animal-kingdom",
-    name: "Animal Kingdom",
-    region: "Florida",
-    color: "bg-blue-100",
-  },
+  { id: "magic-kingdom", name: "Magic Kingdom", region: "Florida", color: "bg-blue-100" },
+  { id: "animal-kingdom", name: "Animal Kingdom", region: "Florida", color: "bg-blue-100" },
   { id: "epcot", name: "Epcot", region: "Florida", color: "bg-blue-100" },
-  {
-    id: "hollywood-studios",
-    name: "Hollywood Studios",
-    region: "Florida",
-    color: "bg-blue-100",
-  },
-  {
-    id: "universal-studios-florida",
-    name: "Universal Studios FL",
-    region: "Florida",
-    color: "bg-purple-100",
-  },
-  {
-    id: "islands-of-adventure",
-    name: "Island of Adventure",
-    region: "Florida",
-    color: "bg-purple-100",
-  },
-  {
-    id: "epic-universe",
-    name: "Epic Universe",
-    region: "Florida",
-    color: "bg-purple-100",
-  },
-  {
-    id: "disneyland",
-    name: "Disneyland",
-    region: "California",
-    color: "bg-red-100",
-  },
-  {
-    id: "california-adventure",
-    name: "Disney California Adventure",
-    region: "California",
-    color: "bg-red-100",
-  },
-  {
-    id: "universal-hollywood",
-    name: "Universal Studios Hollywood",
-    region: "California",
-    color: "bg-yellow-100",
-  },
+  { id: "hollywood-studios", name: "Hollywood Studios", region: "Florida", color: "bg-blue-100" },
+  { id: "universal-studios-florida", name: "Universal Studios FL", region: "Florida", color: "bg-blue-100" },
+  { id: "islands-of-adventure", name: "Island of Adventure", region: "Florida", color: "bg-blue-100" },
+  { id: "epic-universe", name: "Epic Universe", region: "Florida", color: "bg-blue-100" },
+  { id: "disneyland", name: "Disneyland", region: "California", color: "bg-blue-100" },
+  { id: "california-adventure", name: "Disney California Adventure", region: "California", color: "bg-blue-100" },
+  { id: "universal-hollywood", name: "Universal Studios Hollywood", region: "California", color: "bg-blue-100" },
 ];
 
 function Home() {
@@ -109,7 +161,6 @@ function Home() {
       });
   }, []);
 
-  // Load Google AdSense script and render ad for this page
   useEffect(() => {
     const scriptSrc = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1663971992262665';
     let script = document.querySelector(`script[src="${scriptSrc}"]`);
@@ -138,6 +189,7 @@ function Home() {
       if (script) script.removeEventListener('load', pushAd);
     };
   }, []);
+
   const formatTime = (iso) => {
     try {
       const d = new Date(iso);
@@ -150,9 +202,9 @@ function Home() {
 
   return (
     <div className="flex flex-col gap-4">
-      {/* <h2 className="text-lg font-semibold text-gray-800 mb-2">
-        Select a Park
-      </h2> */}
+      
+      {/* 4-Hour Weather Banner */}
+      <WeatherBanner region={selectedRegion} />
 
       <div className="flex w-full gap-0 my-2">
         <button

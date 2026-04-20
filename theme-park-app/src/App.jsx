@@ -7,7 +7,7 @@ function App() {
     <Router>
       <div className="min-h-screen max-w-md mx-auto bg-white shadow-xl overflow-hidden">
         {/* Top Navigation Bar */}
-        <header className="bg-blue-600 text-white p-4 text-center sticky top-0 z-10">
+        <header className="bg-blue-400 text-white p-4 text-center sticky top-0 z-10">
           <h1 className="text-xl font-bold">Theme Park Status</h1>
         </header>
 
