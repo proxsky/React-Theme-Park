@@ -1,6 +1,8 @@
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { MapPin } from "lucide-react";
+import AdBanner from "./AdBanner";
+import NativeAd from "./NativeAd";
 
 // --- Weather Helper Functions & Component ---
 const getWeatherIcon = (code) => {
@@ -161,34 +163,7 @@ function Home() {
       });
   }, []);
 
-  useEffect(() => {
-    const scriptSrc = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1663971992262665';
-    let script = document.querySelector(`script[src="${scriptSrc}"]`);
-    const pushAd = () => {
-      try {
-        (window.adsbygoogle = window.adsbygoogle || []).push({});
-      } catch (e) {
-        // ignore
-      }
-    };
 
-    if (!script) {
-      script = document.createElement('script');
-      script.async = true;
-      script.src = scriptSrc;
-      script.crossOrigin = 'anonymous';
-      script.addEventListener('load', pushAd);
-      document.head.appendChild(script);
-    } else if (script.getAttribute('data-loaded') || script.readyState === 'complete') {
-      pushAd();
-    } else {
-      script.addEventListener('load', pushAd);
-    }
-
-    return () => {
-      if (script) script.removeEventListener('load', pushAd);
-    };
-  }, []);
 
   const formatTime = (iso) => {
     try {
@@ -201,10 +176,11 @@ function Home() {
   };
 
   return (
-    <div className="flex flex-col gap-4">
-      
+    <div className="flex flex-col gap-1">
+    
       {/* 4-Hour Weather Banner */}
       <WeatherBanner region={selectedRegion} />
+       
 
       <div className="flex w-full gap-0 my-2">
         <button
@@ -266,14 +242,7 @@ function Home() {
           </button>
         ))}
       </div>
-        <div className="mt-4 flex justify-center">
-          <ins className="adsbygoogle"
-               style={{ display: 'block' }}
-               data-ad-client="ca-pub-1663971992262665"
-               data-ad-slot="1741122967"
-               data-ad-format="auto"
-               data-full-width-responsive="true"></ins>
-        </div>
+      
     </div>
   );
 }
