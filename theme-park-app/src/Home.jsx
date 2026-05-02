@@ -1,8 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { MapPin } from "lucide-react";
-import AdBanner from "./AdBanner";
-import NativeAd from "./NativeAd";
 
 // --- Weather Helper Functions & Component ---
 const getWeatherIcon = (code) => {
